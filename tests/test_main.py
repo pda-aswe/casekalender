@@ -4,16 +4,16 @@ from unittest.mock import patch, ANY, MagicMock, Mock
 calendar = MagicMock()
 
 @patch("appointmentManager.appointmentManager")
-def test_onMQTTconnect(mock_wetter):
+def test_onMQTTconnect(mock_app):
 
     mock_client = MagicMock()
 
     main.on_connect(mock_client,None,None,None)
 
-    mock_client.subscribe.assert_called_with([("stt",0)])
+    mock_client.subscribe.assert_called_with([("stt",0), ("appointment/next",0)])
 
 @patch("appointmentManager.appointmentManager")
-def test_onMQTTMessage(mock_wetter):
+def test_onMQTTMessage(mock_app):
 
     main.on_message(MagicMock(),None,message_for_testing())
     assert True
