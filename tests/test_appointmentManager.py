@@ -13,7 +13,7 @@ class TestappointmentManager(unittest.TestCase):
         # Create an instance of EntryManager with the mock MQTT client
         self.appointmentManager = appointmentManager.appointmentManager(self.mqtt_client)
 
-    @patch('src.appointmentManager.datetime')
+    @patch('appointmentManager.datetime')
     def test_add_entry(self, mock_datetime):
         # Mock the current datetime
         now = '2023-04-06 10:00:00'
@@ -49,8 +49,8 @@ class TestappointmentManager(unittest.TestCase):
             '{"id": "12345"}'
         )
 
-    @patch('src.appointmentManager.json.dumps')
-    @patch('src.appointmentManager.datetime')
+    @patch('appointmentManager.json.dumps')
+    @patch('appointmentManager.datetime')
     def test_update_entry(self, mock_datetime, mock_dumps):
         # Mock the current datetime
         now = '2023-04-06 10:00:00'
