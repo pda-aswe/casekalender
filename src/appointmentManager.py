@@ -1,6 +1,7 @@
 import json
 from datetime import datetime, timedelta
 from dateutil.tz import tzlocal
+import zahlwort2num as w2n
 
 class appointmentManager:
     def __init__(self, mqtt_client):
@@ -72,27 +73,39 @@ class appointmentManager:
                 self.next_appointment_notified = True
 
 
-#"Erstelle den Termin am <Datum, z.B. 06.04.>, um <12> Uhr, mit dem Titel <Testtitel>. Er geht <2> Stunden"
+#"Erstelle den Termin am <Datum, z.B. 21.04.>, um <12> Uhr, mit dem Titel <Testtitel>. Die Dauer beträgt <2> Stunden"
 def extract_information_from_text_new_appointment(text):
     words = text.split(" ")
     #for word in range(len(words)):
     #    print(f"{word} {words[word]}")
-    
-    start = str(words[4]) + str(words[6])
-    year = datetime.now().year
-    month = words[4].split(".")[1].strip(",")
-    day = words[4].split(".")[0]
-    hour = words[6]
-    start = datetime(int(year), int(month), int(day), int(hour), tzinfo=tzlocal())
-    if start < datetime.now(tzlocal()):
-        start = datetime(int(year) + 1, int(month), int(day), int(hour), tzinfo=tzlocal())
-    end = datetime(start.year, int(month), int(day), int(hour) + int(words[14]), tzinfo=tzlocal())
-    summary = str(words[11]).strip(".")
-    return start.isoformat(), end.isoformat(), summary
+    if len(words) > 12:
+        try:
+            if w2n.convert(words[4])[-1] == ".":
+                day = int(w2n.convert(words[4])[:-1])
+            if w2n.convert(words[5])[-1] == ".":
+                month = int(w2n.convert(words[5])[:-1])
+            hour = int(w2n.convert(words[7]))
+            duration = int(w2n.convert(words[16]))
+        except:
+            return False, False, False
+        year = datetime.now().year
+        start = datetime(int(year), int(month), int(day), int(hour), tzinfo=tzlocal())
+        if start < datetime.now(tzlocal()):
+            start = datetime(int(year) + 1, int(month), int(day), int(hour), tzinfo=tzlocal())
+        end = datetime(start.year, int(month), int(day), int(hour) + int(duration), tzinfo=tzlocal())
+        summary = str(words[12])
+        return start.isoformat(), end.isoformat(), summary
+    else:
+        return False, False, False
 
 
 def extract_information_from_text_delay_appointment(text):
     words = text.split(" ")
     #for word in range(len(words)):
     #    print(f"{word} {words[word]}")
-    return int(words[4])
+    try:
+        string2Num = int(w2n.convert(words[5]))
+    except:
+        string2Num = 0
+
+    return string2Num

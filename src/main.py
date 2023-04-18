@@ -21,11 +21,11 @@ def on_message(client, userdata, msg):
 
 def specific_callback(client, userdata, msg):
     if msg.topic == "stt":
-        payload = str(msg.payload.decode('utf-8'))
-        payload = payload.strip().strip(",").lower()
+        sttData = json.loads(str(msg.payload.decode("utf-8")))
+        payload = sttData['base'].strip().lower()
         
         # Check for "lösche den termin" in the payload and delete the next appointment.
-        if "lösche den termin" in payload:
+        if "lösche den termin" in payload or "lösche den nächsten termin" in payload:
             # Get the ID of the next appointment
             appointment_id = calendar.get_next_appointment_id()
             if appointment_id != None:
@@ -33,30 +33,35 @@ def specific_callback(client, userdata, msg):
                 calendar.delete_appointment(appointment_id)
                 calendar.get_next_appointment()
                 print("Termin geloescht")
+                client.publish("tts", "Der Termin wurde gelöscht")
         
-        # Check for "Erstelle einen Termin am <Datum, z.B. 06.04.>, um <12> Uhr, mit dem Titel <Testtitel>. Er geht <2> Stunden" in the payload and create a new appointment.
+        # Check for "Erstelle einen Termin am <Datum, z.B. 21.04.>, um <12> Uhr, mit dem Titel <Testtitel>. Die Dauer beträgt <2> Stunden" in the payload and create a new appointment.
         elif "erstelle einen termin am" in payload:
             start, end, summary = appointmentManager.extract_information_from_text_new_appointment(payload)
             # Extract the date and summary from the payload
-            
-            # Create a new appointment
-            calendar.new_appointment(start=start, end=end, summary=summary, location="-")
-            calendar.get_next_appointment()
-            print("Termin erstellt")
+            if start == False:
+                client.publish("tts", "Ich konnte leider nicht alle Daten verstehen. Versuche es bitte erneut")
+            else:
+                # Create a new appointment
+                calendar.new_appointment(start=start, end=end, summary=summary, location="-")
+                calendar.get_next_appointment()
+                print("Termin erstellt")
+                client.publish("tts", "Der Termin "+summary+" habe ich in den Kalender hinzugefügt.")
         
         # Check for "verschiebe den termin um <Stunden, z.B. 3> stunden" in the payload and delay the next appointment.
         #"b'verschiebe den n\\xc3\\xa4chsten termin um 3 stunden'"
-        elif "verschiebe den termin um" in payload and "stunden" in payload:
+        elif "verschiebe den nächsten termin um" in payload and "stunden" in payload:
             # Extract the number of hours to delay from the payload
             hours = appointmentManager.extract_information_from_text_delay_appointment(payload)
             
             # Get the ID of the next appointment
             appointment_id = calendar.get_next_appointment_id()
-            if appointment_id != None:
+            if appointment_id != None and hours != 0:
                 # Delay the next appointment
                 calendar.delay_appointment(hours)
                 calendar.get_next_appointment()
                 print("Termin verschoben")
+                client.publish("tts", "Der Termin wurde um "+str(hours)+" Stunden verschoben.")
     
     elif msg.topic == "appointment/next":
         payload = json.loads(msg.payload)
