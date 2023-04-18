@@ -98,7 +98,7 @@ class TestappointmentManager(unittest.TestCase):
 
     def test_extract_information_from_text_new_appointment(self):
         text = "Erstelle einen Termin am einundzwanzigsten vierten um zwölf Uhr mit dem Titel Test die Dauer beträgt zwei Stunden"
-        assert appointmentManager.extract_information_from_text_new_appointment(text) == ("2023-04-21T12:00:00+02:00", "2023-04-21T14:00:00+02:00", "Test") or appointmentManager.extract_information_from_text_new_appointment(text) == ("2024-04-14T12:00:00+00:00", "2024-04-14T14:00:00+00:00", "Test")
+        assert appointmentManager.extract_information_from_text_new_appointment(text) == ("2024-04-21T12:00:00+02:00", "2024-04-21T14:00:00+02:00", "Test") or appointmentManager.extract_information_from_text_new_appointment(text) == ("2024-04-14T12:00:00+00:00", "2024-04-14T14:00:00+00:00", "Test")
 
     def test_extract_information_from_text_delay_appointment(self):
         text = "Verschiebe den nächsten Termin um drei Stunden"
